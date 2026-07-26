@@ -1,0 +1,44 @@
+<div id="mc">
+  <h3 id="mc-title">{{Title}}</h3>
+  <div id="mc-question">{{Question}}</div>
+  <div id="mc-image">{{Image}}</div>
+  <div id="mc-hint">Select all answers that apply, then flip the card</div>
+  <div id="mc-options"></div>
+</div>
+<script type="application/json" id="mc-answers-data">{{Answers}}</script>
+
+<script>
+(function () {
+  const answers = JSON.parse(document.getElementById('mc-answers-data').textContent || '[]');
+  const optionsEl = document.getElementById('mc-options');
+
+  sessionStorage.removeItem('mc-selected');
+  const selected = new Set();
+
+  function render() {
+    optionsEl.innerHTML = '';
+    answers.forEach(function (answer, i) {
+      const optionEl = document.createElement('div');
+      optionEl.className = 'mc-option' + (selected.has(i) ? ' selected' : '');
+
+      const boxEl = document.createElement('div');
+      boxEl.className = 'mc-option-box';
+
+      const textEl = document.createElement('div');
+      textEl.className = 'mc-option-text';
+      textEl.textContent = answer.text;
+
+      optionEl.appendChild(boxEl);
+      optionEl.appendChild(textEl);
+      optionEl.addEventListener('click', function () {
+        if (selected.has(i)) selected.delete(i); else selected.add(i);
+        sessionStorage.setItem('mc-selected', JSON.stringify(Array.from(selected)));
+        render();
+      });
+      optionsEl.appendChild(optionEl);
+    });
+  }
+
+  render();
+})();
+</script>

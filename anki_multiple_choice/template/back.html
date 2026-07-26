@@ -1,0 +1,64 @@
+<div id="mc">
+  <h3 id="mc-title">{{Title}}</h3>
+  <div id="mc-question">{{Question}}</div>
+  <div id="mc-image">{{Image}}</div>
+  <div id="mc-summary"></div>
+  <div id="mc-results"></div>
+  <div id="mc-note">{{Explanation}}</div>
+</div>
+<script type="application/json" id="mc-answers-data">{{Answers}}</script>
+
+<script>
+(function () {
+  const answers = JSON.parse(document.getElementById('mc-answers-data').textContent || '[]');
+  const stored = sessionStorage.getItem('mc-selected');
+  const selected = new Set(stored ? JSON.parse(stored) : []);
+
+  const resultsEl = document.getElementById('mc-results');
+  let gotCorrect = 0, gotWrong = 0;
+  const totalCorrect = answers.filter(function (a) { return a.correct; }).length;
+
+  answers.forEach(function (answer, i) {
+    const wasSelected = selected.has(i);
+    let cls = '';
+    let icon = '';
+    let label = '';
+
+    if (answer.correct && wasSelected) {
+      cls = 'correct'; icon = '✓'; gotCorrect++;
+    } else if (answer.correct && !wasSelected) {
+      cls = 'missed'; icon = '✓'; label = 'you missed this';
+    } else if (!answer.correct && wasSelected) {
+      cls = 'wrong'; icon = '✗'; label = 'you picked this'; gotWrong++;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'mc-result' + (cls ? ' ' + cls : '');
+
+    const iconEl = document.createElement('div');
+    iconEl.className = 'mc-result-icon';
+    iconEl.textContent = icon;
+
+    const textEl = document.createElement('div');
+    textEl.className = 'mc-result-text';
+    textEl.textContent = answer.text;
+
+    row.appendChild(iconEl);
+    row.appendChild(textEl);
+
+    if (label) {
+      const labelEl = document.createElement('div');
+      labelEl.className = 'mc-result-label';
+      labelEl.textContent = label;
+      row.appendChild(labelEl);
+    }
+
+    resultsEl.appendChild(row);
+  });
+
+  const summaryEl = document.getElementById('mc-summary');
+  summaryEl.textContent =
+    gotCorrect + ' / ' + totalCorrect + ' correct' +
+    (gotWrong ? ' • ' + gotWrong + ' wrong pick' + (gotWrong > 1 ? 's' : '') : '');
+})();
+</script>
